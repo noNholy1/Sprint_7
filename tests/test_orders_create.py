@@ -17,5 +17,6 @@ class TestOrderCreate:
         OrderData.order_data_two_colors_3, OrderData.order_data_no_colors_4
     ])
     def test_order_create_color_parametrize_success(self, order_data):
-        response = requests.post(Urls.URL_orders_create, json=order_data, timeout=5)
+        with allure.step('Отправка запроса на создание заказа'):
+            response = requests.post(Urls.URL_orders_create, json=order_data, timeout=5)
         assert response.status_code == 201 and 'track' in response.text

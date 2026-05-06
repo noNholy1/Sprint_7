@@ -10,14 +10,17 @@ class TestCourierCreate:
 
     @allure.title('Проверка успешного создания аккаунта курьера с валидными данными')
     @allure.description('Happy path. Проверяются код и тело ответа.')
-    def test_create_courier_account_success(self):
+    def test_create_courier_account_success(self, delete_courier_after_test):
         payload = {
             'login': create_random_login(),
             'password': create_random_password(),
             'firstName': create_random_firstname()
         }
-        response = requests.post(Urls.URL_courier_create, json=payload)
+        with allure.step('Отправка запроса на создание курьера'):
+            response = requests.post(Urls.URL_courier_create, json=payload)
         assert response.status_code == 201 and response.json() == {'ok': True}
+        
+        delete_courier_after_test['id'] = response.json().get('id')
 
     @allure.title('Проверка получения ошибки при повторном использовании логина для создания курьера')
     @allure.description('Проверяются код и тело ответа.')
@@ -27,7 +30,8 @@ class TestCourierCreate:
             'password': create_random_password(),
             'firstName': create_random_firstname()
         }
-        response = requests.post(Urls.URL_courier_create, json=payload)
+        with allure.step('Отправка запроса на создание курьера с занятым логином'):
+            response = requests.post(Urls.URL_courier_create, json=payload)
         assert response.status_code == 409
         assert response.json()['message'] == 'Этот логин уже используется. Попробуйте другой.'
 
@@ -39,6 +43,7 @@ class TestCourierCreate:
         {'login': create_random_login(), 'firstName': create_random_firstname()}
 ])
     def test_create_courier_missing_required_fields(self, incomplete_payload):
-        response = requests.post(Urls.URL_courier_create, json=incomplete_payload)
+        with allure.step('Отправка запроса на создание курьера с неполными данными'):
+            response = requests.post(Urls.URL_courier_create, json=incomplete_payload)
         assert response.status_code == 400
         assert response.json()['message'] == 'Недостаточно данных для создания учетной записи'
